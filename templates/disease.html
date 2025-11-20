@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Disease Prediction</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='disease.css') }}">
+
+
+    
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+
+</head>
+<body>
+  <div>
+   <nav class="navbar" role="navigation" aria-label="Main navigation">
+      <div class="nav-left">
+        <div class="logo">MG</div>
+        <div class="site-title">Medi Guide</div>
+      </div>
+
+      <div class="nav-center">
+
+        <a class="nav-link" href="/">Home</a>
+        <a class="nav-link" href="/chatbot">AI Chatbot</a>
+        <a class="nav-link" href="#search">Hospital Search</a>
+      </div>
+
+      <div class="nav-right">
+        <a class="btn btn-login" href="/hospital/login">Hospital Sign In</a>
+        <a class="btn btn-signup" href="/hospital/register">Hospital Sign Up</a>
+      </div>
+    </nav>
+    <form id="symptom-form" method="POST">
+    <div class="container" >
+        <div class="heading"><h1>Select The Symptom</h1></div>
+        <p>Select the symptom that you feel and the webpage will predict the corresponding disease according to them</p>
+         <div class="empty"></div>
+      <div class="search-box" >
+        <div id="selected-symptoms" class="selected-symptoms"></div>
+        <input type="text"  id="search"  placeholder="search and select the symptoms"><br>
+        <div id="suggestions" class="suggestions"></div>
+      </div>
+       <div class="button">
+        <button type="button" class="clear">Clear</button>
+        <button class="submit" type="submit">Submit</button>
+       </div>
+    </div>
+    </form>
+    </div>
+    <div class="result" id="result"></div>
+
+    
+ <script src="{{ url_for('static', filename='disease.js') }}"></script>
+</body>
+</html>

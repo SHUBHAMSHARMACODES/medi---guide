@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hospital Profile</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='profile.css') }}">
+</head>
+<body>
+
+<div class="container">
+
+    <h2 class="title">Update Hospital Profile</h2>
+
+    <form action="/hospital/profile" method="POST" class="profile-form">
+
+        <div class="form-group">
+            <label>Hospital Name</label>
+            <input type="text" name="name" value="{{ hospital.name }}" required>
+        </div>
+
+        <div class="form-group">
+            <label>Address</label>
+            <input type="text" name="address" value="{{ hospital.address }}" required>
+        </div>
+
+        <div class="form-group">
+            <label>Pincode</label>
+            <input type="text" name="pincode" value="{{ hospital.pincode }}" required>
+        </div>
+
+        <div class="form-group">
+            <label>Speciality</label>
+            <input type="text" name="speciality" value="{{ hospital.speciality }}">
+        </div>
+
+        <div class="form-group">
+            <label>Ayushman Supported</label>
+            <select name="ayushman_supported">
+                <option value="1" {% if hospital.ayushman_supported == 1 %}selected{% endif %}>Yes</option>
+                <option value="0" {% if hospital.ayushman_supported == 0 %}selected{% endif %}>No</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Phone</label>
+            <input type="text" name="phone" value="{{ hospital.phone }}">
+        </div>
+
+        <div class="form-group">
+            <label>Email</label>
+            <input type="email" name="email" value="{{ hospital.email }}">
+        </div>
+
+        <div class="form-group">
+            <label>Total Beds</label>
+            <input type="number" name="total_beds" value="{{ hospital.total_beds }}">
+        </div>
+
+        <div class="form-group">
+            <label>Available Beds</label>
+            <input type="number" name="available_beds" value="{{ hospital.available_beds }}">
+        </div>
+
+        <div class="form-group">
+            <label>Bed Charge (per day)</label>
+            <input type="text" name="bed_charge" value="{{ hospital.bed_charge }}">
+        </div>
+
+        <div class="form-group">
+            <label>Ambulance Available</label>
+            <select name="ambulance_available">
+                <option value="1" {% if hospital.ambulance_available == 1 %}selected{% endif %}>Yes</option>
+                <option value="0" {% if hospital.ambulance_available == 0 %}selected{% endif %}>No</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Emergency Service</label>
+            <select name="emergency_available">
+                <option value="1" {% if hospital.emergency_available == 1 %}selected{% endif %}>Yes</option>
+                <option value="0" {% if hospital.emergency_available == 0 %}selected{% endif %}>No</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Opening Time</label>
+            <input type="text" name="opening_time" value="{{ hospital.opening_time }}">
+        </div>
+
+        <div class="form-group">
+            <label>Closing Time</label>
+            <input type="text" name="closing_time" value="{{ hospital.closing_time }}">
+        </div>
+
+        <button class="btn">Update Profile</button>
+
+    </form>
+</div>
+
+</body>
+</html>

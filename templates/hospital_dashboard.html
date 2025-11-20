@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hospital Dashboard | Medi Guide</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='hospital_dashboard.css') }}">
+</head>
+<body>
+<div class="overlay"></div>
+
+  <!-- Background Image -->
+  <div class="bg-image"></div>
+  <div class="dark-overlay"></div>
+
+  <!-- Navbar -->
+  <nav class="navbar">
+   
+  <div class="nav-left">
+  <div class="logo">MG</div>
+  <h2 class="site-title">Medi Guide</h2>
+</div>
+
+
+    <div class="nav-right">
+      <a href="/hospital/profile" class="btn small">Update Profile</a>
+      <a href="/hospital/logout" class="btn logout">Logout</a>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <div class="dashboard">
+    <div class="welcome">
+      <h1>Welcome, {{ hospital_name or "Hospital" }}</h1>
+      <p>Manage your hospital details and keep information updated for users.</p>
+    </div>
+
+    <div class="cards">
+      <div class="card">
+        <h3>Total Beds</h3>
+        <p>{{ total_beds or 0 }}</p>
+      </div>
+      <div class="card">
+        <h3>Available Beds</h3>
+        <p>{{ available_beds or 0 }}</p>
+      </div>
+      <div class="card">
+        <h3>Bed Charge</h3>
+        <p>₹ {{ bed_charge or 0 }}</p>
+      </div>
+      <div class="card">
+        <h3>Emergency Available</h3>
+        <p>{{ 'Yes' if emergency_available else 'No' }}</p>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

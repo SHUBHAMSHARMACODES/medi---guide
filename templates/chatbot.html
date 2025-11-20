@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Health Chatbot</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='chatbot.css') }}">
+</head>
+<body>
+      <nav class="navbar" role="navigation" aria-label="Main navigation">
+      <div class="nav-left">
+        <div class="logo">MG</div>
+        <div class="site-title">Medi Guide</div>
+      </div>
+
+      <div class="nav-center">
+        <a class="nav-link" href="/">Home</a>
+        <a class="nav-link" href="/disease">Disease Prediction</a>
+        
+        <a class="nav-link" href="#search">Hospital Search</a>
+      </div>
+
+      <div class="nav-right">
+        <a class="btn btn-login" href="/hospital/login">Hospital Sign In</a>
+        <a class="btn btn-signup" href="/hospital/register">Hospital Sign Up</a>
+      </div>
+    </nav>
+
+
+<div id="chatbox">
+    <div id="messages"></div>
+    <div id="input-area">
+        <input type="text" id="userInput" placeholder="Ask about health..." />
+        <button onclick="sendMessage()">➤</button>
+    </div>
+</div>
+
+<script>
+async function sendMessage() {
+    const inputField = document.getElementById("userInput");
+    const input = inputField.value.trim();
+    if (!input) return;
+
+    const messagesDiv = document.getElementById("messages");
+
+    // User message
+    const userMessage = document.createElement("div");
+    userMessage.classList.add("message", "user");
+    userMessage.textContent = input;
+    messagesDiv.appendChild(userMessage);
+
+    // Scroll down
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    inputField.value = "";
+
+    // Fetch bot response
+    try {
+        const res = await fetch("/ask_bot", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ question: input })
+        });
+        const data = await res.json();
+
+        const botMessage = document.createElement("div");
+        botMessage.classList.add("message", "bot");
+       botMessage.textContent = data.answer;
+ // HTML ok for colored text
+        messagesDiv.appendChild(botMessage);
+
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+
+    } catch (err) {
+        const errorMessage = document.createElement("div");
+        errorMessage.classList.add("message", "bot");
+        errorMessage.textContent = "Bot Error: " + err;
+        messagesDiv.appendChild(errorMessage);
+    }
+}
+</script>
+
+</body>
+</html>

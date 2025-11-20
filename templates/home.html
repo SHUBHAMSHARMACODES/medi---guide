@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Medi Guide</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+
+</head>
+<body>
+  <!-- DARK OVERLAY (for darker background) -->
+  <div class="overlay"></div>
+
+  <!-- HERO SECTION -->
+  <main class="hero">
+    <!-- NAVBAR -->
+    <nav class="navbar" role="navigation" aria-label="Main navigation">
+      <div class="nav-left">
+        <div class="logo">MG</div>
+        <div class="site-title">Medi Guide</div>
+      </div>
+
+      <div class="nav-center">
+        <a class="nav-link" href="/disease">Disease Prediction</a>
+        <a class="nav-link" href="/chatbot">AI Chatbot</a>
+        <a class="nav-link" href="#search">Hospital Search</a>
+      </div>
+
+      <div class="nav-right">
+        <a class="btn btn-login" href="/hospital/login">Hospital Sign In</a>
+        <a class="btn btn-signup" href="/hospital/register">Hospital Sign Up</a>
+      </div>
+    </nav>
+
+    <!-- HERO CONTENT -->
+    <div class="hero-content">
+      <div class="hero-inner">
+        <h1 class="headline">Find the Right Hospital. Get the Right Care.</h1>
+        <p class="sub">Search nearby hospitals, check Ayushman support & bed availability instantly.</p>
+
+        <div class="search-box">
+         <form action="/search" method="GET">
+           <input type="text" name="pincode" placeholder="Enter pincode">
+           <input type="text" name="hospital" placeholder="Enter hospital">
+           <button type="submit">Search</button>
+         </form>
+
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-container">
+      <div class="footer-left">
+        <h2>Medi Guide</h2>
+        <p>Guiding Patients with Hospitals</p>
+      </div>
+
+      <div class="footer-middle">
+        <h3>Contact</h3>
+        <p>Email: <a href="mailto:mediofficial@gmail.com">mediofficial@gmail.com</a></p>
+        <p>Phone: +91 98xxxxxxxx</p>
+      </div>
+
+      <div class="footer-right">
+        <h3>Follow Us</h3><br>
+        <a href="https://www.instagram.com/_ig_shubhoi/?hl=en" target="_blank">Instagram</a><br>
+        <a href="https://www.linkedin.com/in/shubham-sharma-6b9248333" target="_blank">LinkedIn</a><br>
+       </div>
+    </div>
+
+    <div class="footer-bottom">
+      <p>© 2025 Medi Guide | Designed by Life Support</p>
+    </div>
+  </footer>
+
+  <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

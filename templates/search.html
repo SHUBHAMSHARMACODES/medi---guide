@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hospital Search Results | Medi Guide</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='search.css') }}">
+</head>
+<body>
+  <div class="overlay"></div>
+
+  <div class="container">
+    <h1>Hospitals Found</h1>
+
+    {% if hospitals %}
+      <ul class="hospital-list">
+        {% for h in hospitals %}
+          <li class="hospital-card">
+            <h2>{{ h.name }}</h2>
+            <p><strong>Speciality:</strong> {{ h.speciality }}</p>
+            <p>📍 {{ h.address }} ({{ h.pincode }})</p>
+            <p>☎ {{ h.phone }} | ✉ {{ h.email }}</p>
+            <p><strong>Ayushman:</strong> {{ 'Yes' if h.ayushman_supported else 'No' }}</p>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="no-result">No hospitals found for this search.</p>
+    {% endif %}
+  </div>
+</body>
+</html>

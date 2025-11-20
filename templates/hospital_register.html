@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hospital Registration | Medi Guide</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='hospital_auth.css') }}">
+</head>
+<body>
+  <div class="overlay"></div>
+
+  <div class="container">
+    <h1 class="title">Hospital Registration</h1>
+    <form method="POST" action="/hospital/register" class="form-box">
+      <div class="form-group">
+        <label>Hospital Name</label>
+        <input type="text" name="name" required>
+      </div>
+
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" name="email" required>
+      </div>
+
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" name="password" required>
+      </div>
+
+      <div class="form-group">
+        <label>Phone</label>
+        <input type="text" name="phone" required>
+      </div>
+
+     
+
+     
+      
+
+      
+
+      <button type="submit" class="btn">Register</button>
+
+      <p class="alt-link">Already have an account? <a href="/hospital/login">Login</a></p>
+        <p class="alt-link">
+  <a href="/" style="color: #fff; text-decoration: underline;">← Back to Home</a>
+</p>
+    </form>
+  </div>
+</body>
+</html>
