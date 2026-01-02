@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Hospital Search</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='search_style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<nav class="navbar">
+    <div class="nav-left">
+        <div class="logo">MG</div>
+        <div class="site-title">Medi Guide</div>
+    </div>
+
+    <div class="nav-center">
+        <a class="nav-link" href="/">Home</a>
+        <a class="nav-link" href="/disease">Disease Prediction</a>
+        <a class="nav-link" href="/chatbot">AI Chatbot</a>
+    </div>
+</nav>
+
+<div class="search-container">
+    <h1>Search Hospitals</h1>
+    <p>Use advanced filters to find the best hospital</p>
+
+    <form action="/hospital-search/result" method="GET" class="filter-form">
+
+        <div class="filter-row">
+            <input type="text" name="pincode" placeholder="Pincode">
+            <input type="text" name="city" placeholder="City">
+        </div>
+
+        <div class="filter-row">
+            <select name="speciality">
+                <option value="">Select Speciality</option>
+                <option value="cardiology">Cardiology</option>
+                <option value="orthopedic">Orthopedic</option>
+                <option value="neurology">Neurology</option>
+                <option value="gynecology">Gynecology</option>
+                <option value="general">General Physician</option>
+            </select>
+
+            <select name="rating">
+                <option value="">Rating</option>
+                <option value="5">5 ★</option>
+                <option value="4">4 ★ & above</option>
+                <option value="3">3 ★ & above</option>
+            </select>
+        </div>
+
+        <div class="filter-row">
+            <label>
+                <input type="checkbox" name="ayushman" value="yes">
+                Ayushman Supported
+            </label>
+
+            <label>
+                <input type="checkbox" name="bed" value="yes">
+                Beds Available
+            </label>
+        </div>
+
+        <button type="submit" class="btn-search">Search</button>
+    </form>
+</div>
+
+{% if hospitals is defined %}
+<div class="results-container">
+    <h2>Search Results</h2>
+
+    {% if hospitals|length == 0 %}
+        <p>No hospitals found.</p>
+    {% endif %}
+
+    {% for h in hospitals %}
+    <div class="hospital-card">
+        <h3>{{ h.name }}</h3>
+
+        <p><strong>Address:</strong> {{ h.address }}</p>
+        <p><strong>Speciality:</strong> {{ h.speciality }}</p>
+        <p><strong>Pincode:</strong> {{ h.pincode }}</p>
+
+        <p><strong>Total Beds:</strong> {{ h.total_beds }}</p>
+        <p><strong>Available Beds:</strong> {{ h.available_beds }}</p>
+        <p><strong>Bed Charge:</strong> ₹{{ h.bed_charge }}</p>
+
+        <p><strong>Ayushman Supported:</strong> {{ 'Yes' if h.ayushman_supported else 'No' }}</p>
+        <p><strong>Ambulance:</strong> {{ 'Yes' if h.ambulance_available else 'No' }}</p>
+        <p><strong>Emergency:</strong> {{ 'Yes' if h.emergency_available else 'No' }}</p>
+
+        <p><strong>Timings:</strong> {{ h.opening_time }} - {{ h.closing_time }}</p>
+
+        <a class="btn-details">View Details</a>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+</body>
+</html>

@@ -7,12 +7,11 @@ import requests
 from werkzeug.security import generate_password_hash, check_password_hash
 
 
-# ================== OPENROUTER FREE MODEL CONFIG ==================
 from openai import OpenAI
 
 client = OpenAI(
     base_url="https://openrouter.ai/api/v1",
-    api_key="YOUR_API_KEY_HERE"
+    api_key="Y"
 )
 
 def ask_openrouter(question):
@@ -25,6 +24,7 @@ def ask_openrouter(question):
         )
 
         # Return AI response
+        # Note: structure may vary; adapt if response path differs
         return response.choices[0].message.content
 
     except Exception as e:
@@ -41,17 +41,17 @@ def get_connection():
         user="root",
         password="Ghaneshwar!2001",
         database="medi_guide",
-        autocommit=True
+        autocommit=True  # we'll commit explicitly where needed
     )
 
 
-# ================== OPENROUTER FREE MODEL CONFIG ==================
-
-
 # ================== ML MODEL ==================
+# If these files don't exist locally, these lines will raise errors.
+# Keep them if you have the model and data files in project root.
 model = joblib.load("disease_prediction_model.model")
 data = pd.read_csv("disease.csv")
-data.drop(columns=["diseases"], inplace=True)
+if "diseases" in data.columns:
+    data.drop(columns=["diseases"], inplace=True)
 columns = data.columns.to_list()
 
 
@@ -61,37 +61,41 @@ def home():
     return render_template("home.html")
 
 
-# ================== SEARCH ==================
+# ================ BASIC SEARCH (search.html) ================
+# This route expects GET params: ?hospital=...&pincode=...
 @app.route("/search")
-def search():
+def basic_search():
     hospital_name = request.args.get('hospital', '').strip()
     pincode = request.args.get('pincode', '').strip()
 
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
 
-    if pincode and not hospital_name:
-        cursor.execute("SELECT * FROM hospitals WHERE pincode = %s", (pincode,))
+    try:
+        query = "SELECT * FROM hospitals WHERE 1=1"
+        params = []
 
-    elif hospital_name and not pincode:
-        cursor.execute("SELECT * FROM hospitals WHERE LOWER(name) LIKE LOWER(%s)", (f"{hospital_name}%",))
+        if hospital_name:
+            query += " AND LOWER(name) LIKE LOWER(%s)"
+            params.append(hospital_name + "%")
 
-    elif pincode and hospital_name:
-        cursor.execute(
-            "SELECT * FROM hospitals WHERE pincode = %s AND LOWER(name) LIKE LOWER(%s)",
-            (pincode, f"{hospital_name}%")
-        )
+        if pincode:
+            query += " AND pincode = %s"
+            params.append(pincode)
 
-    else:
+        # If no filters provided, we can either return empty list or all hospitals.
+        # Current behavior: if no input -> show empty (consistent with previous)
+        if not params:
+            hospitals = []
+        else:
+            cursor.execute(query, tuple(params))
+            hospitals = cursor.fetchall()
+
+    finally:
         cursor.close()
         conn.close()
-        return render_template('search.html', hospitals=[])
 
-    result = cursor.fetchall()
-    cursor.close()
-    conn.close()
-
-    return render_template('search.html', hospitals=result)
+    return render_template('search.html', hospitals=hospitals)
 
 
 # ================== DISEASE PAGE ==================
@@ -116,6 +120,8 @@ def predict():
 @app.route("/chatbot")
 def chatbot_page():
     return render_template("chatbot.html")
+
+
 @app.route("/ask_bot", methods=["POST"])
 def ask_bot():
     data = request.get_json()
@@ -134,36 +140,51 @@ def ask_bot():
 @app.route("/hospital/register", methods=["GET", "POST"])
 def hospital_register():
     if request.method == "POST":
-        name = request.form["name"]
-        email = request.form["email"]
-        phone = request.form["phone"]
-        password = generate_password_hash(request.form["password"])
+        name = request.form.get("name", "").strip()
+        email = request.form.get("email", "").strip()
+        phone = request.form.get("phone", "").strip()
+        raw_password = request.form.get("password", "")
 
-        conn = get_connection()
-        cursor = conn.cursor(buffered=True)
-
-        cursor.execute("SELECT id FROM hospital_accounts WHERE email=%s", (email,))
-        if cursor.fetchone():
-            flash("Email already registered!", "danger")
+        if not (name and email and phone and raw_password):
+            flash("Please fill all required fields.", "danger")
             return redirect(url_for("hospital_register"))
 
-        cursor.execute("""
-            INSERT INTO hospital_accounts (name, email, phone, password)
-            VALUES (%s, %s, %s, %s)
-        """, (name, email, phone, password))
+        password = generate_password_hash(raw_password)
 
-        account_id = cursor.lastrowid
+        conn = get_connection()
+        cursor = conn.cursor()
 
-        cursor.execute("""
-            INSERT INTO hospitals (account_id, name)
-            VALUES (%s, %s)
-        """, (account_id, name))
+        try:
+            # check existing account
+            cursor.execute("SELECT id FROM hospital_accounts WHERE email=%s", (email,))
+            if cursor.fetchone():
+                flash("Email already registered!", "danger")
+                return redirect(url_for("hospital_register"))
 
-        cursor.close()
-        conn.close()
+            cursor.execute(
+                "INSERT INTO hospital_accounts (name, email, phone, password) VALUES (%s, %s, %s, %s)",
+                (name, email, phone, password)
+            )
+            account_id = cursor.lastrowid
 
-        flash("Registration Successful! Please login.", "success")
-        return redirect(url_for("hospital_login"))
+            # create hospitals row with minimal data
+            cursor.execute(
+                "INSERT INTO hospitals (account_id, name) VALUES (%s, %s)",
+                (account_id, name)
+            )
+
+            conn.commit()
+            flash("Registration Successful! Please login.", "success")
+            return redirect(url_for("hospital_login"))
+
+        except Exception as e:
+            conn.rollback()
+            flash("Registration failed: " + str(e), "danger")
+            return redirect(url_for("hospital_register"))
+
+        finally:
+            cursor.close()
+            conn.close()
 
     return render_template("hospital_register.html")
 
@@ -172,17 +193,18 @@ def hospital_register():
 @app.route("/hospital/login", methods=["GET", "POST"])
 def hospital_login():
     if request.method == "POST":
-        email = request.form["email"]
-        password = request.form["password"]
+        email = request.form.get("email", "").strip()
+        password = request.form.get("password", "")
 
         conn = get_connection()
         cursor = conn.cursor(dictionary=True)
 
-        cursor.execute("SELECT * FROM hospital_accounts WHERE email=%s", (email,))
-        user = cursor.fetchone()
-
-        cursor.close()
-        conn.close()
+        try:
+            cursor.execute("SELECT * FROM hospital_accounts WHERE email=%s", (email,))
+            user = cursor.fetchone()
+        finally:
+            cursor.close()
+            conn.close()
 
         if user and check_password_hash(user["password"], password):
             session["hospital_id"] = user["id"]
@@ -204,16 +226,20 @@ def hospital_dashboard():
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
 
-    cursor.execute("""
-        SELECT name, total_beds, available_beds, bed_charge, emergency_available
-        FROM hospitals 
-        WHERE account_id = %s
-    """, (session["hospital_id"],))
+    try:
+        cursor.execute("""
+            SELECT name, total_beds, available_beds, bed_charge, emergency_available
+            FROM hospitals
+            WHERE account_id = %s
+        """, (session["hospital_id"],))
+        hospital = cursor.fetchone()
+    finally:
+        cursor.close()
+        conn.close()
 
-    hospital = cursor.fetchone()
-
-    cursor.close()
-    conn.close()
+    if not hospital:
+        # fallback defaults to avoid template errors
+        hospital = {"name": "Hospital", "total_beds": 0, "available_beds": 0, "bed_charge": 0, "emergency_available": 0}
 
     return render_template(
         "hospital_dashboard.html",
@@ -235,35 +261,36 @@ def hospital_profile():
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
 
-    if request.method == "POST":
+    try:
+        if request.method == "POST":
+            fields = (
+                "name", "address", "pincode", "speciality", "ayushman_supported",
+                "phone", "email", "total_beds", "available_beds", "bed_charge",
+                "ambulance_available", "emergency_available",
+                "opening_time", "closing_time"
+            )
 
-        fields = (
-            "name", "address", "pincode", "speciality", "ayushman_supported",
-            "phone", "email", "total_beds", "available_beds", "bed_charge",
-            "ambulance_available", "emergency_available",
-            "opening_time", "closing_time"
-        )
+            # Build values safely (missing keys will raise KeyError — you may want to default)
+            values = tuple(request.form.get(f, "") for f in fields)
 
-        values = tuple(request.form[f] for f in fields)
+            update_query = f"""
+                UPDATE hospitals SET
+                    {", ".join([f"{f}=%s" for f in fields])}
+                WHERE account_id=%s
+            """
 
-        update_query = f"""
-            UPDATE hospitals SET
-                {", ".join([f"{f}=%s" for f in fields])}
-            WHERE account_id=%s
-        """
+            cursor.execute(update_query, values + (session["hospital_id"],))
+            conn.commit()
 
-        cursor.execute(update_query, values + (session["hospital_id"],))
+            return redirect(url_for("hospital_dashboard"))
 
+        # GET
+        cursor.execute("SELECT * FROM hospitals WHERE account_id=%s", (session["hospital_id"],))
+        hospital = cursor.fetchone()
+
+    finally:
         cursor.close()
         conn.close()
-
-        return redirect(url_for("hospital_dashboard"))
-
-    cursor.execute("SELECT * FROM hospitals WHERE account_id=%s", (session["hospital_id"],))
-    hospital = cursor.fetchone()
-
-    cursor.close()
-    conn.close()
 
     return render_template("hospital_profile.html", hospital=hospital)
 
@@ -275,6 +302,63 @@ def hospital_logout():
     return redirect(url_for("hospital_login"))
 
 
-# ================== MAIN ==================
+@app.route("/hospital-search", methods=["GET"])
+def hospital_search_page():
+    return render_template("hospital_search.html")
+
+
+# ================ ADVANCED SEARCH RESULT ================
+@app.route("/hospital-search/result", methods=["GET"])
+def hospital_search_result():
+
+    # IMPORTANT → request.args (GET method)
+    name = request.args.get('name', '').strip()
+    pincode = request.args.get('pincode', '').strip()
+    speciality = request.args.get('speciality', '').strip()
+    ayushman = request.args.get('ayushman', '').strip()
+    ambulance = request.args.get('ambulance', '').strip()
+    emergency = request.args.get('emergency', '').strip()
+
+    query = "SELECT * FROM hospitals WHERE 1=1"
+    params = []
+
+    if name:
+        query += " AND name LIKE %s"
+        params.append("%" + name + "%")
+
+    if pincode:
+        query += " AND pincode = %s"
+        params.append(pincode)
+
+    if speciality:
+        query += " AND speciality LIKE %s"
+        params.append("%" + speciality + "%")
+
+    if ayushman:
+        query += " AND ayushman_supported = %s"
+        params.append(1)
+
+    if ambulance:
+        query += " AND ambulance_available = %s"
+        params.append(1)
+
+    if emergency:
+        query += " AND emergency_available = %s"
+        params.append(1)
+
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    try:
+        cursor.execute(query, tuple(params))
+        hospitals = cursor.fetchall()
+    finally:
+        cursor.close()
+        conn.close()
+
+    return render_template("hospital_search.html", hospitals=hospitals)
+
+
+
 if __name__ == "__main__":
     app.run(debug=True)

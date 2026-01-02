@@ -11,7 +11,7 @@ body, html {
 
 /* ===== BACKGROUND ===== */
 body {
-  background: url('/static/images/bg3.jpg') center/cover no-repeat fixed;
+  background: url('/static/images/bg2.jpg') center/cover no-repeat fixed;
   position: relative;
   overflow-x: hidden;
 }
